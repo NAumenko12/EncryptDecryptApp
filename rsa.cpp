@@ -1,53 +1,74 @@
-#include <iostream>
-using namespace std;
+#include "crypto_utils.h"
+/*
+void rsa() {
+    int64_t p{};
+    int64_t q{};
+    int64_t Cb{};
+    int64_t m{};
+    cout << "Введите простое число p: ";
+    cin >> p;
+    cout << "Введите простое число q: ";
+    cin >> q;
+    if (!isPrime(p) || !isPrime(q)) {
+        cout << "p и q должны быть простыми числами" << endl;
+        return;
+    }
+    int64_t n = p * q;
+    int64_t phi = (p - 1) * (q - 1);
+    cout << "p = " << p << endl;
+    cout << "q = " << q << endl;
+    cout << "n = p * q = " << n << endl;
+    cout << "phi(n) = " << phi << endl;
+    cout << "Введите закрытый ключ Cb: ";
+    cin >> Cb;
+    if (gcd(Cb, phi) != 1) {
+        cout << "Cb не подходит, так как gcd(Cb, phi) != 1" << endl;
+        return;
+    }
+    int64_t Db = algcherezC(Cb, phi);
+    cout << "\nКлючи Боба:" << endl;
+    cout << "Private key Cb = " << Cb << endl;
+    cout << "Public key Db = " << Db << endl;
+    cout << "Public key Nb = " << n << endl;
+    cout << "Введите сообщение m: ";
+    cin >> m;
+    if (m >= n) {
+        cout << "Сообщение должно быть меньше n" << endl;
+        return;
+    }
+    cout << "\nИсходное сообщение m = " << m << endl;
+    int64_t e = mod(m, Db, n);
+    cout << "\nАлиса шифрует:" << endl;
+    cout << "e = m^Db mod Nb = " << e << endl;
+    int64_t decrypted = mod(e, Cb, n);
+    cout << "\nБоб расшифровывает:" << endl;
+    cout << "m' = e^Cb mod Nb = " << decrypted << endl;
+}
+*/
 
-int algcherezC(int base, int module) {
-    int r0 = module;
-    int r1 = base;
-    int u0 = 0;
-    int u1 = 1;
-    while (r1 != 0) {
-        int q = r0 / r1;
-        int nr = r0 - q * r1;
-        int nu = u0 - q * u1;
-        r0 = r1;
-        r1 = nr;
-        u0 = u1;
-        u1 = nu;
+string runRsa(const string& input, bool encrypt, int64_t p, int64_t q, int64_t publicKey) {
+    if (!isPrime(p) || !isPrime(q)) {
+        return "Ошибка: p и q должны быть простыми числами.";
     }
-    if (u0 < 0){
-        u0 += module;
+    int64_t n = p * q;
+    int64_t phi = (p - 1) * (q - 1);
+    int64_t privateKey = algcherezC(publicKey, phi);
+    if (privateKey == -1 || gcd(publicKey, phi) != 1) {
+        return "Ошибка: не удалось подготовить ключи RSA.";
     }
-    return u0;
+    if (n <= 255) {
+        return "Ошибка: n должно быть больше 255, чтобы можно было шифровать текст.";
+    }
+    if (encrypt) {
+        return numbersToText(processNumbers(textToBytes(input), publicKey, n));
+    }
+    return bytesToText(processNumbers(parseNumbers(input), privateKey, n));
 }
 
-int mod(int base, int power, int modulo) {
-    base %= modulo;
-    power %= modulo - 1;
-    int result = 1;
-    for (int i = 0; i < power; ++i) {
-        result *= base;
-        result %= modulo;
-    }
-    return result;
-}
-
-void shamira() {
-    int m = 10;
-    int p = 23;
-    int Ca = 7;
-    int Cb = 5;
-    int Da = algcherezC(Ca, p - 1);
-    int Db = algcherezC(Cb, p - 1);
-    cout << "Da = " << Da << endl;
-    cout << "Db = " << Db << endl;
-    int X1 = mod(m, Ca, p);
-    cout << "X1 = " << X1 << endl;
-    int X2 = mod(X1, Cb, p);
-    cout << "X2 = " << X2 << endl;
-    int X3 = mod(X2, Da, p);
-    cout << "X3 = " << X3 << endl;
-    int X4 = mod(X3, Db, p);
-    cout << "X4 = " << X4 << endl;
-    cout << "Исходное сообщение = " << X4 << endl;
+string processRsa(const string& input, bool encrypt) {
+    cout << "\nПараметры RSA:\n";
+    int64_t p = readInt64("Введите простое число p: ");
+    int64_t q = readInt64("Введите простое число q: ");
+    int64_t publicKey = readInt64("Введите открытую степень e: ");
+    return runRsa(input, encrypt, p, q, publicKey);
 }
