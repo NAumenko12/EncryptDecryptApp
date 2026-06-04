@@ -1,6 +1,7 @@
 #ifndef CRYPTO_UTILS_H
 #define CRYPTO_UTILS_H
 
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iostream>

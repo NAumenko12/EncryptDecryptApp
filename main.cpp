@@ -13,7 +13,7 @@ int main() {
         cout << "2. Шамир\n";
         int algorithm = schitat_vibor("Ваш выбор: ", 1, 2);
         vector<uint8_t> result;
-
+        
         if (action == 3) {
             result = sgenerirovat_key(algorithm);
             zapisat_resultat(result);
