@@ -1,2 +1,2 @@
 # EncryptDecryptApp
-![alt text](docs/image.png)
+![alt text](docs/struct.png)
